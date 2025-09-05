@@ -72,9 +72,9 @@ const GameModal: React.FC<GameModalProps> = ({
             <p className="text-amber-800 font-sans text-pretty leading-relaxed text-sm sm:text-base md:text-lg px-2">
               {randomGameDiscovery.description}
             </p>
-            <div className="mt-2 text-xs text-stone-500 font-mono">
+            {/* <div className="mt-2 text-xs text-stone-500 font-mono">
               Game ID: <span className="font-bold">{gameId}</span>
-            </div>
+            </div> */}
           </div>
 
           {/* Footer */}

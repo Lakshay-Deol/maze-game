@@ -14,6 +14,7 @@ import {
 
 import GameModal from "@/components/game-modal";
 import games from "@/lib/games.json";
+import { redirect, useRouter } from "next/navigation";
 // Types for the maze system
 type CellType = "wall" | "path" | "game" | "player";
 type Position = { x: number; y: number };
@@ -133,43 +134,45 @@ const MazeCell = memo(
           </div>
         )}
 
-        {cell.isGameNode && cell.isDiscovered && !cell.hasPlayer && (
+        {/* Highlight all game node cells at the start, not just after discovery */}
+        {cell.isGameNode && !cell.hasPlayer && (
           <div className="w-full h-full flex items-center justify-center relative">
-            <div className="absolute inset-1 bg-gradient-to-br from-red-400 via-orange-500 to-yellow-400 border border-red-600 animate-pulse">
-              <div className="w-full h-full relative overflow-hidden">
-                {/* Explosion particles */}
-                <div
-                  className="absolute top-0 left-0 w-1 h-1 bg-yellow-300 rounded-full animate-ping"
-                  style={{ animationDelay: "0s" }}
+            <div className="absolute inset-1 bg-gradient-to-br from-yellow-200 via-yellow-400 to-orange-300 border-2 border-yellow-600 animate-pulse opacity-80" />
+            {cell.isDiscovered ? (
+              <>
+                <div className="absolute inset-1 bg-gradient-to-br from-red-400 via-orange-500 to-yellow-400 border border-red-600 animate-pulse">
+                  <div className="w-full h-full relative overflow-hidden">
+                    {/* Explosion particles */}
+                    <div
+                      className="absolute top-0 left-0 w-1 h-1 bg-yellow-300 rounded-full animate-ping"
+                      style={{ animationDelay: "0s" }}
+                    />
+                    <div
+                      className="absolute top-1 right-0 w-1 h-1 bg-orange-400 rounded-full animate-ping"
+                      style={{ animationDelay: "0.2s" }}
+                    />
+                    <div
+                      className="absolute bottom-0 left-1 w-1 h-1 bg-red-400 rounded-full animate-ping"
+                      style={{ animationDelay: "0.4s" }}
+                    />
+                    <div
+                      className="absolute bottom-1 right-1 w-1 h-1 bg-yellow-400 rounded-full animate-ping"
+                      style={{ animationDelay: "0.6s" }}
+                    />
+                    <div
+                      className="absolute top-1/2 left-1/2 w-1 h-1 bg-white rounded-full animate-ping transform -translate-x-1/2 -translate-y-1/2"
+                      style={{ animationDelay: "0.8s" }}
+                    />
+                  </div>
+                </div>
+                <Bomb
+                  className="w-4 h-4 text-red-800 animate-bounce relative z-10"
+                  style={{ animationDuration: "1s" }}
                 />
-                <div
-                  className="absolute top-1 right-0 w-1 h-1 bg-orange-400 rounded-full animate-ping"
-                  style={{ animationDelay: "0.2s" }}
-                />
-                <div
-                  className="absolute bottom-0 left-1 w-1 h-1 bg-red-400 rounded-full animate-ping"
-                  style={{ animationDelay: "0.4s" }}
-                />
-                <div
-                  className="absolute bottom-1 right-1 w-1 h-1 bg-yellow-400 rounded-full animate-ping"
-                  style={{ animationDelay: "0.6s" }}
-                />
-                <div
-                  className="absolute top-1/2 left-1/2 w-1 h-1 bg-white rounded-full animate-ping transform -translate-x-1/2 -translate-y-1/2"
-                  style={{ animationDelay: "0.8s" }}
-                />
-              </div>
-            </div>
-            <Bomb
-              className="w-4 h-4 text-red-800 animate-bounce relative z-10"
-              style={{ animationDuration: "1s" }}
-            />
-          </div>
-        )}
-
-        {cell.isGameNode && !cell.isDiscovered && !cell.hasPlayer && (
-          <div className="w-full h-full flex items-center justify-center">
-            <div className="w-1.5 h-1.5 bg-yellow-600 border border-yellow-700 opacity-60 animate-pulse" />
+              </>
+            ) : (
+              <div className="w-1.5 h-1.5 bg-yellow-600 border border-yellow-700 opacity-60 animate-pulse z-10" />
+            )}
           </div>
         )}
       </div>
@@ -180,6 +183,7 @@ const MazeCell = memo(
 MazeCell.displayName = "MazeCell";
 
 export default function MazeGame() {
+  const router = useRouter();
   const [gameState, setGameState] = useState<GameState>(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("mazeGameState");
@@ -198,6 +202,15 @@ export default function MazeGame() {
       currentGameNode: null,
     };
   });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const isGameCompleted = localStorage.getItem("isGameCompleted");
+      if (isGameCompleted === "1") {
+        router.push("/ending");
+      }
+    }
+  }, []);
 
   const initialMaze = useMemo((): MazeCell[][] => {
     // Try to load maze game node positions from localStorage
@@ -456,6 +469,32 @@ export default function MazeGame() {
     ];
   }, [gameState.currentGameNode]);
 
+  const handleGameSubmit = async () => {
+    const token = localStorage.getItem("maze-token");
+    const userScore = localStorage.getItem("score") || "0";
+    try {
+      const response = await fetch(
+        "https://maze-backend-tazh.onrender.com/api/scores/submit-score",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Token bhejna header me
+          },
+          body: JSON.stringify({ score: userScore }),
+        },
+      );
+      const data = await response.json();
+      if (response.ok) {
+        router.push("/ending");
+        console.log("Score submitted successfully:", data);
+        localStorage.setItem("isGameCompleted", "1");
+      }
+    } catch (err) {
+      console.log("error submitting the game", err);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-neutral-900 flex flex-col items-center justify-center space-y-8 p-4 relative overflow-hidden">
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
@@ -644,8 +683,12 @@ export default function MazeGame() {
         <Button
           onClick={() => {
             if (typeof window !== "undefined") {
-              localStorage.removeItem("mazeGameState");
-              localStorage.removeItem("mazeGameNodes");
+              // Remove everything from localStorage except 'token'
+              const token = localStorage.getItem("maze-token");
+              localStorage.clear();
+              if (token !== null) {
+                localStorage.setItem("maze-token", token);
+              }
               window.location.reload();
             }
           }}
@@ -735,11 +778,7 @@ export default function MazeGame() {
           <div className="flex justify-center mt-8">
             <Button
               className="bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white font-bold py-4 px-10 text-2xl shadow-2xl border-4 border-green-800 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-green-400/40 active:scale-95 minecraft-block"
-              onClick={() =>
-                alert(
-                  "Congratulations! All treasures found. Submit action here.",
-                )
-              }
+              onClick={handleGameSubmit}
             >
               Submit
             </Button>

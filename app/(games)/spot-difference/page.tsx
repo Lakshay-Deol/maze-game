@@ -19,7 +19,7 @@ export default function Riddle1Page() {
     let score: number = parseInt(localStorage.getItem("score") || "0");
     let attempts = count;
     const answer = input.trim().toLowerCase().replace(/\s+/g, "");
-    if (["11"].includes(answer)) {
+    if (["3"].includes(answer)) {
       localStorage.setItem("score", JSON.stringify(score + 1));
       localStorage.removeItem("spotdifference_attempts");
       router.push("/");
