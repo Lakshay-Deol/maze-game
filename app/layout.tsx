@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: "LEGO Maze Game Hub",
   description: "Discover hidden games in a colorful LEGO brick maze",
   generator: "v0.app",
-}
+};
 
 export default function RootLayout({
   children,

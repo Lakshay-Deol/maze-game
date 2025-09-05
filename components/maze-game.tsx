@@ -1,166 +1,188 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useCallback, useMemo, memo } from "react"
-import { Button } from "@/components/ui/button"
-import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Gamepad2, Dice6, Bomb } from "lucide-react"
+import { useState, useEffect, useCallback, useMemo, memo } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  ChevronUp,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Gamepad2,
+  Dice6,
+  Bomb,
+} from "lucide-react";
 
-import GameModal from "@/components/game-modal"
+import GameModal from "@/components/game-modal";
+import games from "@/lib/games.json";
 // Types for the maze system
-type CellType = "wall" | "path" | "game" | "player"
-type Position = { x: number; y: number }
+type CellType = "wall" | "path" | "game" | "player";
+type Position = { x: number; y: number };
 
 interface MazeCell {
-  type: CellType
-  isGameNode: boolean
-  isDiscovered: boolean
-  hasPlayer: boolean
+  type: CellType;
+  isGameNode: boolean;
+  isDiscovered: boolean;
+  hasPlayer: boolean;
+  gameId?: string | number;
 }
 
 interface GameState {
-  playerPosition: Position
-  maze: MazeCell[][]
-  discoveredGames: number
-  totalGames: number
-  showGameModal: boolean
-  currentGameNode: { x: number; y: number } | null
+  playerPosition: Position;
+  maze: MazeCell[][];
+  discoveredGames: number;
+  totalGames: number;
+  showGameModal: boolean;
+  currentGameNode: { x: number; y: number; gameId?: string } | null;
 }
 
-const GRID_SIZE = 15 // 15x15 grid for good mobile experience
+const GRID_SIZE = 15; // 15x15 grid for good mobile experience
 
 const GAME_DISCOVERIES = [
   {
     icon: Gamepad2,
     title: "Secret Challenge Discovered!",
-    description: "You've found a hidden arcade game! Test your skills and see if you can beat the high score.",
+    description:
+      "You've found a hidden arcade game! Test your skills and see if you can beat the high score.",
     color: "text-purple-400",
   },
   {
     icon: Dice6,
     title: "Mystery Game Found!",
-    description: "A dice-based puzzle awaits! Roll your way to victory in this game of chance and strategy.",
+    description:
+      "A dice-based puzzle awaits! Roll your way to victory in this game of chance and strategy.",
     color: "text-blue-400",
   },
   {
     icon: Bomb,
     title: "Explosive Game Located!",
-    description: "BOOM! You've triggered an explosive mini-game! Can you defuse the situation and claim victory?",
+    description:
+      "BOOM! You've triggered an explosive mini-game! Can you defuse the situation and claim victory?",
     color: "text-red-400",
   },
-]
+];
 
 const MINECRAFT_WALL_COLORS = [
   "bg-stone-600", // Stone
   "bg-stone-700", // Cobblestone
   "bg-gray-600", // Andesite
   "bg-stone-500", // Stone variant
-]
+];
 
-const MazeCell = memo(({ cell, x, y }: { cell: MazeCell; x: number; y: number }) => {
-  const cellClasses = useMemo(() => {
-    let classes = "aspect-square transition-all duration-300 relative overflow-hidden "
+const MazeCell = memo(
+  ({ cell, x, y }: { cell: MazeCell; x: number; y: number }) => {
+    const cellClasses = useMemo(() => {
+      let classes =
+        "aspect-square transition-all duration-300 relative overflow-hidden ";
 
-    if (cell.type === "wall") {
-      const colorIndex = (x + y) % MINECRAFT_WALL_COLORS.length
-      const blockColor = MINECRAFT_WALL_COLORS[colorIndex]
-      classes += `${blockColor} minecraft-block border border-black/30 shadow-inner `
-    } else {
-      classes += "bg-green-600 minecraft-block border border-green-700 "
-    }
-
-    if (cell.hasPlayer) {
-      classes =
-        "aspect-square bg-blue-500 minecraft-block border border-blue-700 shadow-lg relative overflow-hidden transition-all duration-300 "
-    } else if (cell.isGameNode) {
-      if (cell.isDiscovered) {
-        classes =
-          "aspect-square bg-gradient-to-br from-cyan-300 to-cyan-500 minecraft-block border border-cyan-600 shadow-xl relative overflow-hidden transition-all duration-300 "
+      if (cell.type === "wall") {
+        const colorIndex = (x + y) % MINECRAFT_WALL_COLORS.length;
+        const blockColor = MINECRAFT_WALL_COLORS[colorIndex];
+        classes += `${blockColor} minecraft-block border border-black/30 shadow-inner `;
       } else {
-        classes += "hover:bg-green-500 cursor-pointer "
+        classes += "bg-green-600 minecraft-block border border-green-700 ";
       }
-    }
 
-    return classes
-  }, [cell.type, cell.hasPlayer, cell.isGameNode, cell.isDiscovered, x, y])
+      if (cell.hasPlayer) {
+        classes =
+          "aspect-square bg-blue-500 minecraft-block border border-blue-700 shadow-lg relative overflow-hidden transition-all duration-300 ";
+      } else if (cell.isGameNode) {
+        if (cell.isDiscovered) {
+          classes =
+            "aspect-square bg-gradient-to-br from-cyan-300 to-cyan-500 minecraft-block border border-cyan-600 shadow-xl relative overflow-hidden transition-all duration-300 ";
+        } else {
+          classes += "hover:bg-green-500 cursor-pointer ";
+        }
+      }
 
-  return (
-    <div className={cellClasses}>
-      {cell.type === "wall" && (
-        <div className="absolute inset-0 opacity-20">
-          <div className="w-full h-full grid grid-cols-4 grid-rows-4 gap-px">
-            {Array.from({ length: 16 }).map((_, i) => (
-              <div key={i} className="bg-white/10 border-r border-b border-black/20" />
-            ))}
-          </div>
-        </div>
-      )}
+      return classes;
+    }, [cell.type, cell.hasPlayer, cell.isGameNode, cell.isDiscovered, x, y]);
 
-      {cell.type === "path" && !cell.hasPlayer && !cell.isGameNode && (
-        <div className="absolute inset-0 opacity-30">
-          <div className="w-full h-full">
-            <div className="absolute top-0 left-0 w-1 h-1 bg-green-400 rounded-full" />
-            <div className="absolute top-1 right-1 w-1 h-1 bg-green-300 rounded-full" />
-            <div className="absolute bottom-1 left-1 w-1 h-1 bg-green-400 rounded-full" />
-            <div className="absolute bottom-0 right-0 w-1 h-1 bg-green-300 rounded-full" />
-          </div>
-        </div>
-      )}
-
-      {cell.hasPlayer && (
-        <div className="w-full h-full flex items-center justify-center relative">
-          <div className="w-6 h-6 bg-orange-300 border border-orange-400 relative">
-            <div className="w-1 h-1 bg-black absolute top-1 left-1" />
-            <div className="w-1 h-1 bg-black absolute top-1 right-1" />
-            <div className="w-2 h-1 bg-pink-400 absolute bottom-1 left-1/2 transform -translate-x-1/2" />
-          </div>
-        </div>
-      )}
-
-      {cell.isGameNode && cell.isDiscovered && !cell.hasPlayer && (
-        <div className="w-full h-full flex items-center justify-center relative">
-          <div className="absolute inset-1 bg-gradient-to-br from-red-400 via-orange-500 to-yellow-400 border border-red-600 animate-pulse">
-            <div className="w-full h-full relative overflow-hidden">
-              {/* Explosion particles */}
-              <div
-                className="absolute top-0 left-0 w-1 h-1 bg-yellow-300 rounded-full animate-ping"
-                style={{ animationDelay: "0s" }}
-              />
-              <div
-                className="absolute top-1 right-0 w-1 h-1 bg-orange-400 rounded-full animate-ping"
-                style={{ animationDelay: "0.2s" }}
-              />
-              <div
-                className="absolute bottom-0 left-1 w-1 h-1 bg-red-400 rounded-full animate-ping"
-                style={{ animationDelay: "0.4s" }}
-              />
-              <div
-                className="absolute bottom-1 right-1 w-1 h-1 bg-yellow-400 rounded-full animate-ping"
-                style={{ animationDelay: "0.6s" }}
-              />
-              <div
-                className="absolute top-1/2 left-1/2 w-1 h-1 bg-white rounded-full animate-ping transform -translate-x-1/2 -translate-y-1/2"
-                style={{ animationDelay: "0.8s" }}
-              />
+    return (
+      <div className={cellClasses}>
+        {cell.type === "wall" && (
+          <div className="absolute inset-0 opacity-20">
+            <div className="w-full h-full grid grid-cols-4 grid-rows-4 gap-px">
+              {Array.from({ length: 16 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="bg-white/10 border-r border-b border-black/20"
+                />
+              ))}
             </div>
           </div>
-          <Bomb className="w-4 h-4 text-red-800 animate-bounce relative z-10" style={{ animationDuration: "1s" }} />
-        </div>
-      )}
+        )}
 
-      {cell.isGameNode && !cell.isDiscovered && !cell.hasPlayer && (
-        <div className="w-full h-full flex items-center justify-center">
-          <div className="w-1.5 h-1.5 bg-yellow-600 border border-yellow-700 opacity-60 animate-pulse" />
-        </div>
-      )}
-    </div>
-  )
-})
+        {cell.type === "path" && !cell.hasPlayer && !cell.isGameNode && (
+          <div className="absolute inset-0 opacity-30">
+            <div className="w-full h-full">
+              <div className="absolute top-0 left-0 w-1 h-1 bg-green-400 rounded-full" />
+              <div className="absolute top-1 right-1 w-1 h-1 bg-green-300 rounded-full" />
+              <div className="absolute bottom-1 left-1 w-1 h-1 bg-green-400 rounded-full" />
+              <div className="absolute bottom-0 right-0 w-1 h-1 bg-green-300 rounded-full" />
+            </div>
+          </div>
+        )}
 
-MazeCell.displayName = "MazeCell"
+        {cell.hasPlayer && (
+          <div className="w-full h-full flex items-center justify-center relative">
+            <div className="w-6 h-6 bg-orange-300 border border-orange-400 relative">
+              <div className="w-1 h-1 bg-black absolute top-1 left-1" />
+              <div className="w-1 h-1 bg-black absolute top-1 right-1" />
+              <div className="w-2 h-1 bg-pink-400 absolute bottom-1 left-1/2 transform -translate-x-1/2" />
+            </div>
+          </div>
+        )}
+
+        {cell.isGameNode && cell.isDiscovered && !cell.hasPlayer && (
+          <div className="w-full h-full flex items-center justify-center relative">
+            <div className="absolute inset-1 bg-gradient-to-br from-red-400 via-orange-500 to-yellow-400 border border-red-600 animate-pulse">
+              <div className="w-full h-full relative overflow-hidden">
+                {/* Explosion particles */}
+                <div
+                  className="absolute top-0 left-0 w-1 h-1 bg-yellow-300 rounded-full animate-ping"
+                  style={{ animationDelay: "0s" }}
+                />
+                <div
+                  className="absolute top-1 right-0 w-1 h-1 bg-orange-400 rounded-full animate-ping"
+                  style={{ animationDelay: "0.2s" }}
+                />
+                <div
+                  className="absolute bottom-0 left-1 w-1 h-1 bg-red-400 rounded-full animate-ping"
+                  style={{ animationDelay: "0.4s" }}
+                />
+                <div
+                  className="absolute bottom-1 right-1 w-1 h-1 bg-yellow-400 rounded-full animate-ping"
+                  style={{ animationDelay: "0.6s" }}
+                />
+                <div
+                  className="absolute top-1/2 left-1/2 w-1 h-1 bg-white rounded-full animate-ping transform -translate-x-1/2 -translate-y-1/2"
+                  style={{ animationDelay: "0.8s" }}
+                />
+              </div>
+            </div>
+            <Bomb
+              className="w-4 h-4 text-red-800 animate-bounce relative z-10"
+              style={{ animationDuration: "1s" }}
+            />
+          </div>
+        )}
+
+        {cell.isGameNode && !cell.isDiscovered && !cell.hasPlayer && (
+          <div className="w-full h-full flex items-center justify-center">
+            <div className="w-1.5 h-1.5 bg-yellow-600 border border-yellow-700 opacity-60 animate-pulse" />
+          </div>
+        )}
+      </div>
+    );
+  },
+);
+
+MazeCell.displayName = "MazeCell";
 
 export default function MazeGame() {
   const [gameState, setGameState] = useState<GameState>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('mazeGameState');
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("mazeGameState");
       if (saved) {
         try {
           return JSON.parse(saved);
@@ -179,7 +201,10 @@ export default function MazeGame() {
 
   const initialMaze = useMemo((): MazeCell[][] => {
     // Try to load maze game node positions from localStorage
-    const savedGameNodes = typeof window !== 'undefined' ? localStorage.getItem('mazeGameNodes') : null;
+    const savedGameNodes =
+      typeof window !== "undefined"
+        ? localStorage.getItem("mazeGameNodes")
+        : null;
     let maze: MazeCell[][] = Array(GRID_SIZE)
       .fill(null)
       .map(() =>
@@ -217,10 +242,16 @@ export default function MazeGame() {
     if (savedGameNodes) {
       // Restore game node positions
       try {
-        const gameNodes: { x: number; y: number }[] = JSON.parse(savedGameNodes);
+        const gameNodes: { x: number; y: number; gameId?: string | number }[] =
+          JSON.parse(savedGameNodes);
         for (const pos of gameNodes) {
-          if (maze[pos.y] && maze[pos.y][pos.x] && maze[pos.y][pos.x].type === "path") {
+          if (
+            maze[pos.y] &&
+            maze[pos.y][pos.x] &&
+            maze[pos.y][pos.x].type === "path"
+          ) {
             maze[pos.y][pos.x].isGameNode = true;
+            if (pos.gameId) maze[pos.y][pos.x].gameId = pos.gameId;
           }
         }
       } catch (e) {
@@ -236,18 +267,20 @@ export default function MazeGame() {
           }
         }
       }
-      // Randomly select 12 cells for game nodes
-      const gameNodeCount = Math.min(12, pathCells.length);
+      // Use the games.json list for gameIds
+      const gameNodeCount = Math.min(games.length, pathCells.length);
       const shuffled = pathCells.sort(() => Math.random() - 0.5);
-      const gameNodes: { x: number; y: number }[] = [];
+      const gameNodes: { x: number; y: number; gameId: string | number }[] = [];
       for (let i = 0; i < gameNodeCount; i++) {
         const pos = shuffled[i];
         maze[pos.y][pos.x].isGameNode = true;
-        gameNodes.push(pos);
+        const gameId = games[i].gameId;
+        maze[pos.y][pos.x].gameId = gameId;
+        gameNodes.push({ ...pos, gameId });
       }
       // Save game node positions to localStorage
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('mazeGameNodes', JSON.stringify(gameNodes));
+      if (typeof window !== "undefined") {
+        localStorage.setItem("mazeGameNodes", JSON.stringify(gameNodes));
       }
     }
 
@@ -261,7 +294,9 @@ export default function MazeGame() {
   // On first load, if no maze in state, initialize it
   useEffect(() => {
     if (!gameState.maze || gameState.maze.length === 0) {
-      const totalGames = initialMaze.flat().filter((cell) => cell.isGameNode).length;
+      const totalGames = initialMaze
+        .flat()
+        .filter((cell) => cell.isGameNode).length;
       setGameState({
         playerPosition: { x: 1, y: 1 },
         maze: initialMaze,
@@ -276,123 +311,150 @@ export default function MazeGame() {
 
   // Persist game state to localStorage on every change
   useEffect(() => {
-    if (typeof window !== 'undefined' && gameState && gameState.maze && gameState.maze.length > 0) {
-      localStorage.setItem('mazeGameState', JSON.stringify(gameState));
+    if (
+      typeof window !== "undefined" &&
+      gameState &&
+      gameState.maze &&
+      gameState.maze.length > 0
+    ) {
+      localStorage.setItem("mazeGameState", JSON.stringify(gameState));
     }
   }, [gameState]);
 
-  const movePlayer = useCallback((direction: "up" | "down" | "left" | "right") => {
-    setGameState((prevState) => {
-      const { playerPosition, maze } = prevState
-      let newX = playerPosition.x
-      let newY = playerPosition.y
+  const movePlayer = useCallback(
+    (direction: "up" | "down" | "left" | "right") => {
+      setGameState((prevState) => {
+        const { playerPosition, maze } = prevState;
+        let newX = playerPosition.x;
+        let newY = playerPosition.y;
 
-      switch (direction) {
-        case "up":
-          newY = Math.max(0, playerPosition.y - 1)
-          break
-        case "down":
-          newY = Math.min(GRID_SIZE - 1, playerPosition.y + 1)
-          break
-        case "left":
-          newX = Math.max(0, playerPosition.x - 1)
-          break
-        case "right":
-          newX = Math.min(GRID_SIZE - 1, playerPosition.x + 1)
-          break
-      }
-
-      // Check if the new position is valid (not a wall)
-      if (maze[newY] && maze[newY][newX] && maze[newY][newX].type !== "wall") {
-        const newMaze = maze.map((row, rowIndex) =>
-          row.map((cell, colIndex) => {
-            if (rowIndex === playerPosition.y && colIndex === playerPosition.x) {
-              return { ...cell, hasPlayer: false }
-            }
-            if (rowIndex === newY && colIndex === newX) {
-              return { ...cell, hasPlayer: true }
-            }
-            return cell
-          }),
-        )
-
-        let discoveredGames = prevState.discoveredGames
-        let showGameModal = false
-        let currentGameNode = null
-
-        if (newMaze[newY][newX].isGameNode && !newMaze[newY][newX].isDiscovered) {
-          newMaze[newY][newX].isDiscovered = true
-          discoveredGames++
-          showGameModal = true
-          currentGameNode = { x: newX, y: newY }
+        switch (direction) {
+          case "up":
+            newY = Math.max(0, playerPosition.y - 1);
+            break;
+          case "down":
+            newY = Math.min(GRID_SIZE - 1, playerPosition.y + 1);
+            break;
+          case "left":
+            newX = Math.max(0, playerPosition.x - 1);
+            break;
+          case "right":
+            newX = Math.min(GRID_SIZE - 1, playerPosition.x + 1);
+            break;
         }
 
-        return {
-          ...prevState,
-          playerPosition: { x: newX, y: newY },
-          maze: newMaze,
-          discoveredGames,
-          showGameModal,
-          currentGameNode,
-        }
-      }
+        // Check if the new position is valid (not a wall)
+        if (
+          maze[newY] &&
+          maze[newY][newX] &&
+          maze[newY][newX].type !== "wall"
+        ) {
+          const newMaze = maze.map((row, rowIndex) =>
+            row.map((cell, colIndex) => {
+              if (
+                rowIndex === playerPosition.y &&
+                colIndex === playerPosition.x
+              ) {
+                return { ...cell, hasPlayer: false };
+              }
+              if (rowIndex === newY && colIndex === newX) {
+                return { ...cell, hasPlayer: true };
+              }
+              return cell;
+            }),
+          );
 
-      return prevState
-    })
-  }, [])
+          let discoveredGames = prevState.discoveredGames;
+          let showGameModal = false;
+          let currentGameNode = null;
+
+          if (
+            newMaze[newY][newX].isGameNode &&
+            !newMaze[newY][newX].isDiscovered
+          ) {
+            newMaze[newY][newX].isDiscovered = true;
+            discoveredGames++;
+            showGameModal = true;
+            currentGameNode = {
+              x: newX,
+              y: newY,
+              gameId:
+                newMaze[newY][newX].gameId !== undefined
+                  ? String(newMaze[newY][newX].gameId)
+                  : undefined,
+            };
+          }
+
+          return {
+            ...prevState,
+            playerPosition: { x: newX, y: newY },
+            maze: newMaze,
+            discoveredGames,
+            showGameModal,
+            currentGameNode,
+          };
+        }
+
+        return prevState;
+      });
+    },
+    [],
+  );
 
   const movePlayerSafe = useCallback(
     (direction: "up" | "down" | "left" | "right") => {
       if (gameState.showGameModal) {
-        return
+        return;
       }
-      movePlayer(direction)
+      movePlayer(direction);
     },
     [movePlayer, gameState.showGameModal],
-  )
+  );
 
   // Keyboard controls
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if (gameState.showGameModal) {
-        return
+        return;
       }
 
       switch (e.key) {
         case "ArrowUp":
-          e.preventDefault()
-          movePlayer("up")
-          break
+          e.preventDefault();
+          movePlayer("up");
+          break;
         case "ArrowDown":
-          e.preventDefault()
-          movePlayer("down")
-          break
+          e.preventDefault();
+          movePlayer("down");
+          break;
         case "ArrowLeft":
-          e.preventDefault()
-          movePlayer("left")
-          break
+          e.preventDefault();
+          movePlayer("left");
+          break;
         case "ArrowRight":
-          e.preventDefault()
-          movePlayer("right")
-          break
+          e.preventDefault();
+          movePlayer("right");
+          break;
       }
-    }
+    };
 
-    window.addEventListener("keydown", handleKeyPress)
-    return () => window.removeEventListener("keydown", handleKeyPress)
-  }, [movePlayer, gameState.showGameModal]) // Added gameState.showGameModal to dependencies
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [movePlayer, gameState.showGameModal]); // Added gameState.showGameModal to dependencies
 
   const closeGameModal = useCallback(() => {
     setGameState((prev) => ({
       ...prev,
       showGameModal: false,
       currentGameNode: null,
-    }))
-  }, [])
+    }));
+  }, []);
 
   const randomGameDiscovery = useMemo(() => {
-    return GAME_DISCOVERIES[Math.floor(Math.random() * GAME_DISCOVERIES.length)]
-  }, [gameState.currentGameNode])
+    return GAME_DISCOVERIES[
+      Math.floor(Math.random() * GAME_DISCOVERIES.length)
+    ];
+  }, [gameState.currentGameNode]);
 
   return (
     <div className="min-h-screen bg-neutral-900 flex flex-col items-center justify-center space-y-8 p-4 relative overflow-hidden">
@@ -510,28 +572,80 @@ export default function MazeGame() {
       <div className="flex items-center justify-center space-x-3 bg-gradient-to-r from-yellow-200 via-amber-100 to-green-200 border-4 border-yellow-600 shadow-xl rounded-lg px-6 py-3 minecraft-block relative z-10">
         <div className="flex items-center space-x-2">
           <span className="w-7 h-7 bg-gradient-to-br from-cyan-400 to-cyan-600 border-2 border-cyan-700 rounded minecraft-block flex items-center justify-center shadow-lg">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="mx-auto">
-              <rect x="2" y="2" width="16" height="16" rx="3" fill="#22d3ee" stroke="#0e7490" strokeWidth="2" />
-              <rect x="6" y="6" width="8" height="8" rx="2" fill="#a7f3d0" stroke="#059669" strokeWidth="1" />
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              className="mx-auto"
+            >
+              <rect
+                x="2"
+                y="2"
+                width="16"
+                height="16"
+                rx="3"
+                fill="#22d3ee"
+                stroke="#0e7490"
+                strokeWidth="2"
+              />
+              <rect
+                x="6"
+                y="6"
+                width="8"
+                height="8"
+                rx="2"
+                fill="#a7f3d0"
+                stroke="#059669"
+                strokeWidth="1"
+              />
             </svg>
           </span>
-          <span className="font-bold text-cyan-700 text-xl drop-shadow">{gameState.discoveredGames}</span>
+          <span className="font-bold text-cyan-700 text-xl drop-shadow">
+            {gameState.discoveredGames}
+          </span>
         </div>
         <span className="font-bold text-lg text-stone-700">/</span>
         <div className="flex items-center space-x-2">
           <span className="w-7 h-7 bg-gradient-to-br from-green-400 to-green-600 border-2 border-green-700 rounded minecraft-block flex items-center justify-center shadow-lg">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="mx-auto">
-              <rect x="2" y="2" width="16" height="16" rx="3" fill="#22c55e" stroke="#166534" strokeWidth="2" />
-              <rect x="6" y="6" width="8" height="8" rx="2" fill="#bbf7d0" stroke="#22c55e" strokeWidth="1" />
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              className="mx-auto"
+            >
+              <rect
+                x="2"
+                y="2"
+                width="16"
+                height="16"
+                rx="3"
+                fill="#22c55e"
+                stroke="#166534"
+                strokeWidth="2"
+              />
+              <rect
+                x="6"
+                y="6"
+                width="8"
+                height="8"
+                rx="2"
+                fill="#bbf7d0"
+                stroke="#22c55e"
+                strokeWidth="1"
+              />
             </svg>
           </span>
-          <span className="font-bold text-green-700 text-xl drop-shadow">{gameState.totalGames}</span>
+          <span className="font-bold text-green-700 text-xl drop-shadow">
+            {gameState.totalGames}
+          </span>
         </div>
         <Button
           onClick={() => {
-            if (typeof window !== 'undefined') {
-              localStorage.removeItem('mazeGameState');
-              localStorage.removeItem('mazeGameNodes');
+            if (typeof window !== "undefined") {
+              localStorage.removeItem("mazeGameState");
+              localStorage.removeItem("mazeGameNodes");
               window.location.reload();
             }
           }}
@@ -551,10 +665,14 @@ export default function MazeGame() {
           aspectRatio: "1",
         }}
       >
-        {gameState.maze.map((row, y) => row.map((cell, x) => <MazeCell key={`${x}-${y}`} cell={cell} x={x} y={y} />))}
+        {gameState.maze.map((row, y) =>
+          row.map((cell, x) => (
+            <MazeCell key={`${x}-${y}`} cell={cell} x={x} y={y} />
+          )),
+        )}
       </div>
 
-  <div className="flex items-center justify-center space-x-4 relative z-10">
+      <div className="flex items-center justify-center space-x-4 relative z-10">
         <Button
           onClick={() => movePlayerSafe("left")}
           variant="outline"
@@ -611,22 +729,61 @@ export default function MazeGame() {
         </Button> */}
       </div>
 
+      {/* Submit button when all treasures are found */}
+      {gameState.discoveredGames === gameState.totalGames &&
+        gameState.totalGames > 0 && (
+          <div className="flex justify-center mt-8">
+            <Button
+              className="bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white font-bold py-4 px-10 text-2xl shadow-2xl border-4 border-green-800 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-green-400/40 active:scale-95 minecraft-block"
+              onClick={() =>
+                alert(
+                  "Congratulations! All treasures found. Submit action here.",
+                )
+              }
+            >
+              Submit
+            </Button>
+          </div>
+        )}
+
       <div className="text-center text-white/90 font-sans max-w-md relative z-10 bg-stone-800/20 backdrop-blur-sm rounded-lg p-6 border-2 border-stone-600/30">
         {/* Maze-style two-color gradient background */}
         <div className="absolute inset-0 rounded-lg overflow-hidden pointer-events-none -z-10">
           <div className="w-full h-full bg-gradient-to-br from-green-500 to-blue-700 opacity-85" />
-          <svg width="100%" height="100%" viewBox="0 0 300 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute inset-0 w-full h-full" style={{ opacity: 0.22 }}>
+          <svg
+            width="100%"
+            height="100%"
+            viewBox="0 0 300 100"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="absolute inset-0 w-full h-full"
+            style={{ opacity: 0.22 }}
+          >
             <defs>
-              <pattern id="mazeLines" width="24" height="24" patternUnits="userSpaceOnUse">
+              <pattern
+                id="mazeLines"
+                width="24"
+                height="24"
+                patternUnits="userSpaceOnUse"
+              >
                 <rect x="0" y="0" width="24" height="24" fill="none" />
-                <path d="M0 0h24v24H0V0zm6 0v18h12V6H6zm12 12h6v6H18v-6zm-12 6h6v6H6v-6z" stroke="#fff" strokeWidth="1.5" opacity="0.13" />
+                <path
+                  d="M0 0h24v24H0V0zm6 0v18h12V6H6zm12 12h6v6H18v-6zm-12 6h6v6H6v-6z"
+                  stroke="#fff"
+                  strokeWidth="1.5"
+                  opacity="0.13"
+                />
               </pattern>
             </defs>
             <rect width="300" height="100" fill="url(#mazeLines)" />
           </svg>
         </div>
-        <p className="leading-relaxed text-lg drop-shadow-lg">Use the stone buttons or keyboard arrow keys to move.</p>
-        <p className="leading-relaxed text-lg drop-shadow-lg">Find all the hidden diamond blocks in the world!</p>
+        <p className="leading-relaxed text-lg drop-shadow-lg">
+          Use the stone buttons or keyboard arrow keys to move.
+        </p>
+        <p className="leading-relaxed text-lg drop-shadow-lg">
+          Find all the hidden diamond blocks in the world!
+        </p>
       </div>
 
       {/* Modal separated into its own component */}
@@ -634,7 +791,8 @@ export default function MazeGame() {
         show={gameState.showGameModal}
         randomGameDiscovery={randomGameDiscovery}
         onClose={closeGameModal}
+        gameId={gameState.currentGameNode?.gameId as string}
       />
     </div>
-  )
+  );
 }

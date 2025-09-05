@@ -1,0 +1,46 @@
+[
+  {
+    "url": "riddle1",
+    "gameId": 1
+  },
+  {
+    "url": "riddle2",
+    "gameId": 2
+  },
+  {
+    "url": "campus",
+    "gameId": 3
+  },
+  {
+    "url": "paradox-1",
+    "gameId": 4
+  },
+  {
+    "url": "paradox-2",
+    "gameId": 5
+  },
+  {
+    "url": "paradox-3",
+    "gameId": 6
+  },
+  {
+    "url": "paradox-4",
+    "gameId": 7
+  },
+  {
+    "url": "paradox-5",
+    "gameId": 8
+  },
+  {
+    "url": "logical-1",
+    "gameId": 9
+  },
+  {
+    "url": "logical-2",
+    "gameId": 10
+  },
+  {
+    "url": "spot-difference",
+    "gameId": 11
+  }
+]

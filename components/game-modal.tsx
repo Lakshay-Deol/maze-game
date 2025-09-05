@@ -1,23 +1,39 @@
-import { Gamepad2, ChevronRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import React from "react"
+import { Gamepad2, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import React from "react";
+import Link from "next/link";
+import games from "@/lib/games.json";
 
-interface GameModalProps {
-  show: boolean
-  randomGameDiscovery: {
-    icon: React.ElementType
-    title: string
-    description: string
-    color: string
-  }
-  onClose: () => void
-  gameId?: string | number
+export interface IGame {
+  gameId: string | number;
+  url: string;
 }
 
-const GameModal: React.FC<GameModalProps> = ({ show, randomGameDiscovery, onClose, gameId }) => {
-  if (!show) return null
-  console.log(gameId);
-  const IconComponent = randomGameDiscovery.icon
+interface GameModalProps {
+  show: boolean;
+  randomGameDiscovery: {
+    icon: React.ElementType;
+    title: string;
+    description: string;
+    color: string;
+  };
+  onClose: () => void;
+  gameId: string | number;
+}
+
+const GameModal: React.FC<GameModalProps> = ({
+  show,
+  randomGameDiscovery,
+  onClose,
+  gameId,
+}) => {
+  if (!show) return null;
+  const IconComponent = randomGameDiscovery.icon;
+
+  // Find the url for the current gameId
+  const game = games.find((g) => String(g.gameId) === String(gameId));
+  const gameUrl = game ? game.url : "#";
+  console.log(gameUrl);
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
@@ -27,8 +43,7 @@ const GameModal: React.FC<GameModalProps> = ({ show, randomGameDiscovery, onClos
           <div
             className="w-full h-full"
             style={{
-              backgroundImage:
-                `repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.1) 10px, rgba(0,0,0,0.1) 20px)`,
+              backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.1) 10px, rgba(0,0,0,0.1) 20px)`,
             }}
           />
         </div>
@@ -57,23 +72,25 @@ const GameModal: React.FC<GameModalProps> = ({ show, randomGameDiscovery, onClos
             <p className="text-amber-800 font-sans text-pretty leading-relaxed text-sm sm:text-base md:text-lg px-2">
               {randomGameDiscovery.description}
             </p>
-            {gameId && (
-              <div className="mt-2 text-xs text-stone-500 font-mono">Game ID: <span className="font-bold">{gameId}</span></div>
-            )}
+            <div className="mt-2 text-xs text-stone-500 font-mono">
+              Game ID: <span className="font-bold">{gameId}</span>
+            </div>
           </div>
 
           {/* Footer */}
           <div className="flex flex-col space-y-2 sm:space-y-3 pt-3 sm:pt-4">
-            <Button
-              className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-3 sm:py-4 text-base sm:text-lg shadow-xl border-4 border-green-700 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl active:scale-95 minecraft-block font-sans relative overflow-hidden"
-              onClick={onClose}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full transition-transform duration-1000" />
-              <div className="relative z-10 flex items-center justify-center">
-                <Gamepad2 className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3" />
-                Play Game
-              </div>
-            </Button>
+            <Link href={`/${gameUrl}`}>
+              <Button
+                className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-3 sm:py-4 text-base sm:text-lg shadow-xl border-4 border-green-700 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl active:scale-95 minecraft-block font-sans relative overflow-hidden"
+                onClick={onClose}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full transition-transform duration-1000" />
+                <div className="relative z-10 flex items-center justify-center">
+                  <Gamepad2 className="w-5 h-5 sm:w-6 sm:h-6 mr-2 sm:mr-3" />
+                  Play Game
+                </div>
+              </Button>
+            </Link>
 
             <Button
               variant="outline"
@@ -89,7 +106,7 @@ const GameModal: React.FC<GameModalProps> = ({ show, randomGameDiscovery, onClos
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default GameModal
+export default GameModal;
