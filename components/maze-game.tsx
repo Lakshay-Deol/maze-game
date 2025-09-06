@@ -483,7 +483,7 @@ export default function MazeGame() {
     const userScore = localStorage.getItem("score") || "0";
     try {
       const response = await fetch(
-        "https://maze-backend-tazh.onrender.com/api/scores/submit-score",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/scores/submit-score`,
         {
           method: "POST",
           headers: {

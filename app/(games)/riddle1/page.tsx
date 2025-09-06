@@ -50,16 +50,15 @@ export default function Riddle1Page() {
           GDG Genesis
         </h2>
         <p className="text-sm sm:text-lg max-w-[90vw] sm:max-w-[500px] text-center text-green-200 mb-6 z-10 font-minecraft">
-          <span className="block mb-2">
-            Not a gym, but you still grow stronger,
-          </span>
-          <span className="block mb-2">
-            Not a market, yet ideas change hands,
-          </span>
-          <span className="block mb-2">
-            Not a class, but learning never ends,
-          </span>
-          <span className="block">Not a party, yet the vibes are louder.</span>
+          I start and end with the same letter,
+          Yet stand for three.
+          I’m global yet local,
+          A family for techies like thee.
+          From coding to creating,
+          From design to growth,
+          If you seek Google vibes,
+          You’ll surely take this oath.
+          What am I?
         </p>
         <form
           onSubmit={handleSubmit}

@@ -17,7 +17,7 @@ const Signin: React.FC = () => {
     e.preventDefault();
     try {
       const response = await fetch(
-        "https://maze-backend-tazh.onrender.com/api/auth/login",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -79,22 +79,13 @@ const Signin: React.FC = () => {
             className="border-2 border-[#bfbfbf] bg-[#181818] text-green-200 text-sm mb-1 font-minecraft px-2 py-1 focus:outline-none focus:ring-2 focus:ring-green-400 placeholder:text-green-400 transition-all minecraft-block"
           />
         </div>
-        <div className="px-4 pb-2">
+        <div className="px-4 pb-4">
           <button
             type="submit"
             className="w-full bg-gradient-to-r from-green-500 to-lime-500 hover:from-green-600 hover:to-lime-600 text-white font-bold py-2 shadow-[4px_4px_0_0_#222] border-2 border-[#bfbfbf] rounded-none transition-all duration-200 active:scale-95 font-minecraft minecraft-block text-base"
           >
             Sign In
           </button>
-        </div>
-        <div className="px-4 pb-4 text-center">
-          <span className="text-xs text-yellow-200 font-minecraft">Don't have an account?</span>
-          <a
-            href="/signup"
-            className="ml-2 text-green-300 underline font-minecraft hover:text-green-400 transition-colors"
-          >
-            Sign Up
-          </a>
         </div>
       </form>
       <style jsx global>{`

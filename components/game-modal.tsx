@@ -92,7 +92,7 @@ const GameModal: React.FC<GameModalProps> = ({
               </Button>
             </Link>
 
-            <Button
+            {/* <Button
               variant="outline"
               className="w-full border-4 border-stone-600 text-stone-700 hover:bg-stone-100 bg-amber-50 py-2.5 sm:py-3 text-sm sm:text-base font-sans font-semibold rounded-lg transition-all duration-200 hover:scale-105 hover:border-stone-700 minecraft-block"
               onClick={onClose}
@@ -101,7 +101,7 @@ const GameModal: React.FC<GameModalProps> = ({
                 <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
                 Continue Mining
               </div>
-            </Button>
+            </Button> */}
           </div>
         </div>
       </div>

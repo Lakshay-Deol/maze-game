@@ -280,11 +280,9 @@ const CampusVerificationSystem: React.FC = () => {
       >
         <div className="absolute -top-2 -left-2 w-8 h-8 bg-[#bfbfbf] border-2 border-[#222] rounded-none minecraft-block" />
         <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-[#bfbfbf] border-2 border-[#222] rounded-none minecraft-block" />
-        {/* Header */}
         <div className="text-center text-2xl font-bold text-green-400 mb-5 pb-2 border-b-2 border-green-500 font-minecraft">
           GDG Genesis
         </div>
-        {/* Info Bar */}
         <div className="flex justify-between items-center mb-5 p-2 bg-[#181818] rounded flex-col md:flex-row gap-2 md:gap-0 w-full">
           <div
             className={`text-lg font-bold ${isWarning ? "text-red-600 animate-pulse" : "text-yellow-400"} font-minecraft`}
@@ -292,11 +290,9 @@ const CampusVerificationSystem: React.FC = () => {
             Time: {formatTime(timeRemaining)}
           </div>
         </div>
-        {/* Instructions */}
         <div className="bg-green-900/60 p-4 rounded mb-5 text-sm leading-relaxed border-l-4 border-green-400 font-minecraft w-full">
           {getInstructionText()}
         </div>
-        {/* Image Grid */}
         <div className={`grid ${getGridClass()} justify-center mx-auto mb-5`}>
           {currentImages.map((imgObj, index) => {
             const isSelected = selectedImages.includes(index);
@@ -361,7 +357,6 @@ const CampusVerificationSystem: React.FC = () => {
             );
           })}
         </div>
-        {/* Modal */}
         {showModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-[#232323] p-8 rounded-lg text-center max-w-sm w-11/12 border-4 border-[#bfbfbf] minecraft-block">
