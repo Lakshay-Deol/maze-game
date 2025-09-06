@@ -33,7 +33,11 @@ const Signup: React.FC = () => {
         `${process.env.NEXT_PUBLIC_API_URL}/api/auth/signup`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            'ngrok-skip-browser-warning': 'true',
+
+          },
           body: JSON.stringify(formData),
         },
       );
@@ -47,7 +51,7 @@ const Signup: React.FC = () => {
   };
 
   return (
-  <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#222] via-[#2d2d2d] to-[#3b3b3b] minecraft-block px-1 py-0">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#222] via-[#2d2d2d] to-[#3b3b3b] minecraft-block px-1 py-0">
       <form
         onSubmit={handleSubmit}
         className="bg-[#232323] border-4 border-[#bfbfbf] shadow-[8px_8px_0_0_#222] p-0 w-full max-w-xs sm:max-w-md flex flex-col gap-0 relative minecraft-block overflow-hidden"

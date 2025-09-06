@@ -488,6 +488,7 @@ export default function MazeGame() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            'ngrok-skip-browser-warning': 'true',
             Authorization: `Bearer ${token}`, // Token bhejna header me
           },
           body: JSON.stringify({ score: userScore }),
