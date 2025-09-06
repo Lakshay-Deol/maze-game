@@ -19,6 +19,10 @@ export default function Riddle2Page() {
     let score: number = parseInt(localStorage.getItem("score") || "0");
     let attempts = count;
     const answer = input.trim().toLowerCase().replace(/\s+/g, "");
+    if (answer === "") {
+      // Do nothing if answer is empty
+      return;
+    }
     if (
       [
         "amongus",

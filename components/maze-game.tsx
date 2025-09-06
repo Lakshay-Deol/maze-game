@@ -14,7 +14,7 @@ import {
 
 import GameModal from "@/components/game-modal";
 import games from "@/lib/games.json";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 // Types for the maze system
 type CellType = "wall" | "path" | "game" | "player";
 type Position = { x: number; y: number };
@@ -190,7 +190,7 @@ export default function MazeGame() {
       if (saved) {
         try {
           return JSON.parse(saved);
-        } catch {}
+        } catch { }
       }
     }
     return {
@@ -207,7 +207,7 @@ export default function MazeGame() {
     if (typeof window !== "undefined") {
       const isGameCompleted = localStorage.getItem("isGameCompleted");
       if (isGameCompleted === "1") {
-        router.push("/ending");
+        router.push("/");
       }
     }
   }, []);
@@ -589,8 +589,8 @@ export default function MazeGame() {
       </div>
 
       <div className="text-center space-y-4 relative z-10">
-        <h1 className="text-4xl sm:text-5xl md:text-6xl py-10 font-serif font-bold text-white drop-shadow-2xl text-balance">
-          Minecraft Maze Quest
+        <h1 className="text-4xl sm:text-5xl md:text-6xl py-5 font-serif font-bold text-white drop-shadow-2xl text-balance">
+          Maze of mysteries
         </h1>
         {/* <p className="text-sm text-blue-100 font-sans text-pretty max-w-2xl px-4">
           Navigate through the blocky world and discover hidden treasures!
@@ -773,17 +773,17 @@ export default function MazeGame() {
       </div>
 
       {/* Submit button when all treasures are found */}
-      {gameState.discoveredGames === gameState.totalGames &&
-        gameState.totalGames > 0 && (
-          <div className="flex justify-center mt-8">
-            <Button
-              className="bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white font-bold py-4 px-10 text-2xl shadow-2xl border-4 border-green-800 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-green-400/40 active:scale-95 minecraft-block"
-              onClick={handleGameSubmit}
-            >
-              Submit
-            </Button>
-          </div>
-        )}
+      {/* {gameState.discoveredGames === gameState.totalGames &&
+        gameState.totalGames > 0 && ( */}
+      <div className="flex justify-center mt-8">
+        <Button
+          className="bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white font-bold py-4 px-10 text-2xl shadow-2xl border-4 border-green-800 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-green-400/40 active:scale-95 minecraft-block"
+          onClick={handleGameSubmit}
+        >
+          Submit
+        </Button>
+      </div>
+      {/* )} */}
 
       <div className="text-center text-white/90 font-sans max-w-md relative z-10 bg-stone-800/20 backdrop-blur-sm rounded-lg p-6 border-2 border-stone-600/30">
         {/* Maze-style two-color gradient background */}

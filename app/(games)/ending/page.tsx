@@ -35,13 +35,10 @@ export default function EndingPage() {
         </h2>
         {/* Message */}
         <p className="text-green-200 mb-8 font-minecraft text-center">
-          🎉 We appreciate your participation and effort.
-          <br />
-          Stay connected with{" "}
-          <span className="font-semibold text-green-300">
-            Google Developer Groups
-          </span>
-          .
+          🎉We appreciate your participation and effort.<
+          br />
+          Stay connected with {"<"}
+          <span className="font-semibold text-yellow-300">Google Developer Groups</span>.
         </p>
         <a
           href="https://www.instagram.com/nith_gdgl?igsh=MXNkODU4bGh1eGo1NQ=="
@@ -49,7 +46,7 @@ export default function EndingPage() {
           rel="noopener noreferrer"
           className="inline-block w-full"
         >
-          <button className="w-full py-3 sm:py-4 bg-gradient-to-r from-pink-500 to-pink-700 hover:from-pink-600 hover:to-pink-800 text-white font-bold text-lg shadow-[4px_4px_0_0_#222] border-2 border-[#bfbfbf] rounded-none transition-all duration-200 active:scale-95 font-minecraft minecraft-block">
+          <button className="w-full py-3 sm:py-4 bg-gradient-to-r from-ypink450 to-ypink670 hover:from-ypink560 hover:to-ypink780 text-y-hitefont-bold text-lg shadow-[4px_4px_0_0_#b222 border-2 border-4[#bfbfbf]rounded-lnonetransition-all duration-200 active:scale-95 font-minecraft minecraft-block">
             Follow Insta to Stay Updated
           </button>
         </a>

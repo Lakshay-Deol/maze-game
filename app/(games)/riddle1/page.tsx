@@ -17,6 +17,10 @@ export default function Riddle1Page() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     let score: number = parseInt(localStorage.getItem("score") || "0");
+    if (input.trim() === "") {
+      // Do nothing if answer is empty
+      return;
+    }
     let attempts = count;
     if (input.trim().toLowerCase() === "gdg") {
       localStorage.setItem("score", JSON.stringify(score + 1));
@@ -33,7 +37,7 @@ export default function Riddle1Page() {
         router.push("/");
       }
     }
-    console.log(localStorage);
+    // console.log(localStorage);
   };
 
   return (

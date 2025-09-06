@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LEGO Maze Game Hub",
+  title: "GDG Maze Quest",
   description: "Discover hidden games in a colorful LEGO brick maze",
   generator: "v0.app",
 };
