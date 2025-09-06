@@ -205,6 +205,15 @@ export default function MazeGame() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
+      const token = localStorage.getItem("maze-token");
+      if (!token) {
+        router.push("/signin");
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
       const isGameCompleted = localStorage.getItem("isGameCompleted");
       if (isGameCompleted === "1") {
         router.push("/");
