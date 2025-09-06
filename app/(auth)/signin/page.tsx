@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
@@ -51,7 +52,7 @@ const Signin: React.FC = () => {
         </div>
         {/* Info box */}
         <div className="w-full bg-yellow-100/90 border-b-4 border-yellow-400 text-yellow-900 text-center text-xs font-minecraft py-2 px-2 drop-shadow font-bold">
-          Enter your credentials to continue your Maze Quest!
+          Enter your credentials to continue your GDG Maze Quest adventure!
         </div>
         <div className="flex flex-col gap-1 px-4 pt-4 pb-2">
           <label htmlFor="email" className="text-xs font-bold text-yellow-200 font-minecraft">Email</label>
@@ -79,13 +80,25 @@ const Signin: React.FC = () => {
             className="border-2 border-[#bfbfbf] bg-[#181818] text-green-200 text-sm mb-1 font-minecraft px-2 py-1 focus:outline-none focus:ring-2 focus:ring-green-400 placeholder:text-green-400 transition-all minecraft-block"
           />
         </div>
-        <div className="px-4 pb-4">
+        <div className="px-4 pb-2">
           <button
             type="submit"
             className="w-full bg-gradient-to-r from-green-500 to-lime-500 hover:from-green-600 hover:to-lime-600 text-white font-bold py-2 shadow-[4px_4px_0_0_#222] border-2 border-[#bfbfbf] rounded-none transition-all duration-200 active:scale-95 font-minecraft minecraft-block text-base"
           >
             Sign In
           </button>
+        </div>
+        {/* Sign-up link inside form */}
+        <div className="w-full flex flex-col items-center mb-2">
+          <div className="rounded-none px-4 py-2 text-xs sm:text-sm text-green-200 font-minecraft text-center">
+            Don't have an account?{' '}
+            <Link
+              href="/signup"
+              className="text-yellow-300 underline underline-offset-2 hover:text-yellow-400 font-bold font-minecraft transition-colors"
+            >
+              Sign up here
+            </Link>
+          </div>
         </div>
       </form>
       <style jsx global>{`

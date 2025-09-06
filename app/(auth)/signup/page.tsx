@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
@@ -120,6 +121,18 @@ const Signup: React.FC = () => {
           >
             Sign Up
           </button>
+        </div>
+        {/* Sign-in link inside form */}
+        <div className="w-full flex flex-col items-center mb-2">
+          <div className=" rounded-none px-4 py-2 text-xs sm:text-sm text-green-200 font-minecraft  text-center">
+            Already have an account?{' '}
+            <Link
+              href="/signin"
+              className="text-yellow-300 underline underline-offset-2 hover:text-yellow-400 font-bold font-minecraft  transition-colors"
+            >
+              Sign in here
+            </Link>
+          </div>
         </div>
       </form>
       <style jsx global>{`
